@@ -1,10 +1,10 @@
 # allocator
-...
 
 ## Introduction
 This is the first version of the allocator, can only achieve a simple operation.
 
 ## Function && Member type
+
 The type of the Allocator:
 	allocator::value_type
 	allocator::pointer
