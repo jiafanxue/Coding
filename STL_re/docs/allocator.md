@@ -3,9 +3,9 @@
 ## Introduction
 This is the first version of the allocator, can only achieve a simple operation.
 
-## Function && Member type
-
+##  Member type
 The type of the Allocator:
+
 	allocator::value_type
 	allocator::pointer
 	allocator::const_pointer
@@ -15,7 +15,9 @@ The type of the Allocator:
 	allocator::difference_type
 	allocator::rebind   		--- template <class U> struct rebind { typedef allocator<U> other; };
 
+## Function
 The interface function of the Allocator:
+
 	allocator()													-- Default constructor
 	allocaotr(const allocator&)									-- Copy constructor
 	template<class U> allocator(const allocator<U>& other );	-- template construcotr
