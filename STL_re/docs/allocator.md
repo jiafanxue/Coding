@@ -1,8 +1,10 @@
+# allocator
+...
+
 ## Introduction
 This is the first version of the allocator, can only achieve a simple operation.
 
 ## Function && Member type
-
 The type of the Allocator:
 	allocator::value_type
 	allocator::pointer
@@ -14,10 +16,10 @@ The type of the Allocator:
 	allocator::rebind   		--- template <class U> struct rebind { typedef allocator<U> other; };
 
 The interface function of the Allocator:
-	allocator()										-- Default constructor
-	allocaotr(const allocator&)						-- Copy constructor
-	template<class U> allocator(const allocator<U>& other );			-- template construcotr
-	~allocator()									-- Destructor
+	allocator()													-- Default constructor
+	allocaotr(const allocator&)									-- Copy constructor
+	template<class U> allocator(const allocator<U>& other );	-- template construcotr
+	~allocator()												-- Destructor
 
 	pointer address(reference x) const 				-- Return the address of object. e.g. a.address(x) <=> &x 
 	const_pointer address(const_reference x) const  -- Return the const address of object 
