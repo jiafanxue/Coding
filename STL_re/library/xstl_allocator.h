@@ -40,6 +40,35 @@ namespace xstl
 		ptr->~T();
 	}
 
+	// simple_alloc
+	template <typename T, typename Alloc>
+	class simple_alloc
+	{
+	public:
+		static T* allocate(std::size_t n)
+		{
+			return 0 == n ? 0 : (T*) Alloc::allocate(n * sizeof(T));
+		}
+
+		static T* allocate(void)
+		{
+			return (T*)Alloc::allocate(sizeof(T));
+		}
+
+		static void deallocate(T* p, std::size_t n)
+		{
+			if(0 != n) {
+				Alloc::deallocate(p, n * sizeof(T));
+			}
+		}
+
+		static void deallocate(T* p)
+		{
+			Alloc::deallocate(p, sizeof(T));
+		}
+	};
+
+
 	template <typename T>
 	class allocator
 	{
@@ -54,10 +83,11 @@ namespace xstl
 		using difference_type   = std::ptrdiff_t;
 		// using propagate_on_container_move_assignment = std::true_type;
 
-		template <class U> struct rebind {
-			typedef allocator<U> other;
-		};
-		
+		// template <class U> struct rebind {
+		// 	typedef allocator<U> other;
+		// };
+		template <typename U>
+		using rebind			= allocator<U>;
 		// using is_always_equal 	= std::true_type;
 
 	public:
@@ -153,9 +183,13 @@ namespace xstl
 		using size_type  		= std::size_t;
 		using difference_type   = std::ptrdiff_t;
 		// using propagate_on_container_move_assignment = std::true_type;
-		template <class U> struct rebind {
-			typedef allocator<U> other;
-		};
+		
+		// template <class U> struct rebind {
+		// 	typedef allocator<U> other;
+		// };
+		template <typename U>
+		using rebind			= allocator<U>;
+		
 		// using is_always_equal 	= std::true_type; 
 	};
 
