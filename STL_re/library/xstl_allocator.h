@@ -11,7 +11,7 @@
 namespace xstl
 {
 	template <typename T>
-	inline T* _allocate(ptrdiff_t size, T*)
+	inline T* _allocate(std::ptrdiff_t size, T*)
 	{
 		std::set_new_handler(0);
 		T* tmp = (T*)(::operator new((static_cast<size_t>(size * sizeof(T)))));
@@ -47,24 +47,32 @@ namespace xstl
 	public:
 		static T* allocate(std::size_t n)
 		{
-			return 0 == n ? 0 : (T*) Alloc::allocate(n * sizeof(T));
+			// return 0 == n ? 0 : (T*) Alloc::allocate(n * sizeof(T));
+			// return 0 == n ? 0 : (T*) _allocate(n * sizeof(T));
+			return _allocate(static_cast<std::ptrdiff_t>(n * sizeof(T)),
+				static_cast<T*>(0));
 		}
 
 		static T* allocate(void)
 		{
-			return (T*)Alloc::allocate(sizeof(T));
+			// return (T*)Alloc::allocate(sizeof(T));
+			// return (T*)_allocate(sizeof(T));
+			return _allocate(static_cast<std::ptrdiff_t>(sizeof(T)),
+				static_cast<T*>(0));
 		}
 
 		static void deallocate(T* p, std::size_t n)
 		{
 			if(0 != n) {
-				Alloc::deallocate(p, n * sizeof(T));
+				// Alloc::deallocate(p, n * sizeof(T));
+				_deallocate(p, n * sizeof(T));
 			}
 		}
 
 		static void deallocate(T* p)
 		{
-			Alloc::deallocate(p, sizeof(T));
+			// Alloc::deallocate(p, sizeof(T));
+			_deallocate(p, sizeof(T));
 		}
 	};
 
@@ -141,7 +149,7 @@ namespace xstl
 		*/
 		void deallocate(T* p, std::size_t n)
 		{
-			_deallocate(p, n * sizeof(pointer));
+			_deallocate(p, n * sizeof(T));
 		}
 
 		/*
