@@ -1,70 +1,19 @@
-# Vector
+# vector
 
-## Introduction
-This is the first version of the vector, can only achieve a simple operation.
+## 简介（后期可能会继续添加）
+1.vector是STL中的循序容器，是一种动态的数组。vector的存储被自动处理，根据需要被扩展或者收缩。但由于vector中存放有额外的信息用来记录数据（如：大小，容量等等），因此，通常它比静态数组占用更多的内存空间。
 
-## Member Type
-The type of the Allocator:
+2.与关联容器不同，vector中的元素存放是连续的，这意味着我们即可以通过iterator操作，也可以通过传统指针加上偏移量来进行操作。
 
-	vector::value_type
-	vector::allocator_type
-	vector::size_type
-	vector::difference_type
-	vector::reference
-	vector::const_reference
-	vector::pointer
-	vector::const_pointer
-	vector::iterator
-	vector::const_iterator
-	vector::reverse_iterator
-	vector::const_reverse_iterator
+3.vector优先于动态分配的数组。因为通过使用new申请的内存空间，存在内存泄漏的危险，有时还会泄漏资源和破坏内存。
 
-## Member Function
-The interface function of the Allocator:
+4.vector的容量每次以2的倍数增长。 
 
-	Member functions:
-		vector();										-- Constructs the vector
-		~vector();										-- Destructs the vector
-		vector<T>& operator=(const vector<T>& other); 	-- Assigned values to container
-		void assign(size_type count, const T& value);	-- Assigned values to container
-		allocator_type get_allocator() const 			-- Returns the allocator associated with the container
+5.vector存在一个特例化vector<bool>
 
-	Element access:
-		reference at(size_type pos);					-- Returns a reference to the element at specified 
-														   	loaction pos, with bounds checking
-		const_reference at(size_type pos);
-		reference operaotr[](size_type pos);			-- Returns a reference to the element at specified
-															loaction pos, with bounds checking
-		const_reference operaotr[](size_type pos);		
+6.特别值得一提的是，vector是C++通向C和其他语言的通道。
 
-		reference front();								-- Returns reference to the first element in the container.
-		const_reference front();
-		reference back();								-- Returns reference to the last element in the container
-		const_reference back();
-		T* data();										-- Returns pointer to the underlying array serving as 
-		const T* data() const;								element storage.
+7.注意迭代器失效的情况
 
-	Iterators:
-		iterator begin() noexcept
-		const_iterator begin() const noexcept
-		iterator end() noexcept
-		const_iterator end() const noexcept
-	
-	Capacity:
-		bool empty() const noexcept
-		size_type size() const noexcept
-		size_type max_size() const noexcept
-		void reserve() 
-		size_type capacity() const noexcept
-		void shrink_to_fit()							-- It is a non-binding request to reduce capacity() to size().
-
-	Modifiers:
-		void clear()
-		insert()
-		iterator emplace(const_iterator pos, Arg&&...args)
-		erase()
-		void push_bacK(..)
-		void emplace_back(...)
-		void pop_back()
-		void resize(size_type count, T value = T())
-		void swap(vector& other)
+## 资料
+《Effective STL》 13 - 18条
