@@ -303,6 +303,298 @@ namespace xstl
 		basic_string& assign(const CharT* first, const CharT* last);
 
 	public:
+		// Element access
+		reference at(size_type pos)
+		{
+			if(pos >= size()) {
+				m_throw_out_of_range();
+			}
+			return *(m_start + pos);
+		}
+
+		const_reference at(size_type pos) const
+		{
+			if(pos >= size()) {
+				m_throw_out_of_range();
+			}
+			return *(m_start + pos);
+		}
+
+		reference operator[](size_type pos)
+		{
+			return *(m_start + pos);
+		}
+
+		const_reference operator[](size_type pos) const
+		{
+			return *(m_start + pos);
+		}
+
+	public:
+		// Since C++11
+		// is equivalent to operator[](0)
+		CharT& front()
+		{
+			return *m_start;
+		}
+
+		const CharT& front() const
+		{
+			return *m_start;
+		}
+
+		CharT& back()
+		{
+			return *(m_finish - 1);
+		}
+
+		const CharT& back() const
+		{
+			return *(m_finish - 1);
+		}
+
+	public:
+		/* Since C++11 data() and c_str() perform the same function. */
+		const CharT* data() const { return m_start; }
+		// Since C++17
+		CharT* data() { return m_start; }
+
+		const CharT* c_str() const { return m_start; }
+
+		// operator std::basic_string_view<CharT, Traits>() const;
+
+	public:
+		// Iterators
+		iterator begin() /*noexcept*/ { return m_start; }
+		const_iterator begin() const /*noexcept*/ { return m_start; }
+		const_iterator cbegin() const /*noexcept*/ { return static_cast<const_iterator>(m_start); }
+		iterator end() /*noexcept*/ { return m_finish; }
+		const_iterator end() const /*noexcept*/ { return m_finish; }
+		const_iterator cend() const /*noexcept*/ { return static_cast<const_iterator>(m_finish); }
+
+		reverse_iterator rbegin() /*noexcept*/ { return static_cast<reverse_iterator>(m_finish); }
+		const_reverse_iterator rbegin() const /*noexcept*/ { return static_cast<const_reverse_iterator>(m_finish); }
+		const_reverse_iterator crbegin() const /*noexcept*/ { return static_cast<const_reverse_iterator>(m_finish); }
+		reverse_iterator rend() /*noexcept*/ { return static_cast<reverse_iterator>(m_start); }
+		const_reverse_iterator rend() const /*noexcept*/ { return static_cast<const_reverse_iterator>(m_start); }
+		const_reverse_iterator crend() const /*noexcept*/ { return static_cast<const_reverse_iterator>(m_start); }
+
+	public:
+		// Capacity
+		bool empty() const
+		{
+			// return begin() == end();
+			return m_start == m_finish;
+		}
+
+		size_type size() const
+		{
+			// return std::distance(end() - begin());
+			return static_cast<size_type>(m_finish - m_start);
+		}
+
+		size_type length() const
+		{
+			return size();
+		}
+
+		size_type max_size() const
+		{
+			return static_cast<size_type>(-1) / sizeof(CharT);
+		}
+
+		void reserve(size_type new_cap = 0);
+
+		size_type capacity() const
+		{
+			// return static_cast<size_type>(m_end_of_storage - begin());
+			return static_cast<size_type>(m_end_of_storage - begin()) - 1;
+		}
+
+	public:
+		void clear()
+		{
+			if(!empty()) {
+				Traits::assign(*m_start, m_null());
+				destroy(m_start + 1, m_finish + 1);
+				m_finish = m_start;
+			}
+		}
+
+	public:
+		//  s.insert(0, 1, 'E');
+		basic_string& insert(size_type index, size_type count, CharT ch)
+		{
+			if(index > size()) {
+				m_throw_out_of_range();
+			}
+			if(size() > max_size() - count) {
+				m_throw_length_error();
+			}
+			insert(m_start + index, count, ch);
+			return *this;
+		}
+
+		basic_string& insert(size_type index, const CharT* s)
+		{
+			if(index > size()) {
+				m_throw_out_of_range();
+			}
+			size_type len = Traits::length(s);
+			if(size() > max_size() - len) {
+				m_throw_length_error;
+			}
+			insert(m_start + index, s, s + len);
+			return *this;
+		}
+
+		basic_string& insert(size_type index, const CharT* s, size_type count)
+		{
+			if(index > size()){
+				m_throw_out_of_range();
+			}
+			if(size() > max_size() - count) {
+				m_throw_length_error();
+			}
+			insert(m_start + index, s, s + count);
+			return *this;
+		}
+
+		basic_string& insert(size_type index, const basic_string& str)
+		{
+			if(index > size()) {
+				m_throw_out_of_range();
+			}
+			if(size() > max_size() - str.size()) {
+				m_throw_length_error();
+			}
+			insert(m_start + index, str.begin(), str.end());
+			return *this;
+		}
+
+		// Until C++14
+		basic_string& insert(size_type index, const basic_string& str,
+			size_type index_str, size_type count)
+		{
+			if(index > size() || index_str > str.size()) {
+				m_throw_out_of_range();
+			}
+			size_type len = min(count, str.size() - index_str);
+			if(size() > max_size() - len) {
+				m_throw_length_error();
+			}
+			insert(m_start + index, 
+				str.begin() + index_str, 
+				str.begin() + index_str + len);
+			return *this;
+		}
+
+		// Since C++14
+		/*
+		basic_string& insert(size_type index, const basic_string& str,
+			size_type index_str, size_type count = npos)
+		{
+			if(index > size() || index_str > str.size()) {
+				m_throw_out_of_range();
+			}
+			size_type len = min(count, str.size() - index_str);
+			if(size() > max_size() - len) {
+				m_throw_length_error();
+			}
+			insert(m_start + index, 
+				str.begin() + index_str, 
+				str.begin() + index_str + len);
+			return *this;
+		}
+		*/
+
+		// Until C++11
+		iterator insert(iterator pos, CharT ch)
+		{
+			if(pos == m_finish) {
+				push_back(ch);
+				return m_finish - 1;
+			}
+			else {
+				m_insert_aux(pos, ch);
+			}
+		}
+
+		// Since C++11
+		// iterator insert(const_iterator pos, CharT ch);
+
+		// Until C++11
+		// void insert(iterator pos, size_t count, CharT ch);
+		void insert(iterator pos, size_type count, CharT ch);
+		// Since C++11
+		// iterator insert(const_iterator pos, size_type count, CharT ch);
+
+		void insert(iterator pos, const CharT* first, const CharT* last);
+
+		// iterator insert(const_iterator pos, std::initializer_list<CharT> ilist);
+
+	private:
+		iterator m_insert_aux(iterator, CharT);
+
+
+	public:
+		basic_string& erase(size_type index = 0, size_type count = npos)
+		{
+			if(index > size()) {
+				m_throw_out_of_range();
+			}
+			erase(m_start + index, m_start + index + min(count, size() - index));
+			return *this;
+		}
+
+		// Until C++11
+		iterator erase(iterator position)
+		{
+			Traits::move(position, position + 1, m_finish - position);
+			destroy(m_finish);
+			--m_finish;
+			return position;
+		}	
+
+		// Since C++11
+		// iterator erase(const_iterator position);
+
+		// Until C++11
+		iterator erase(iterator first, iterator last)
+		{
+			if(first != last) {
+				Traits::move(first, last, (m_finish - last) + 1);
+				const iterator new_finish = m_finish - (last - first);
+				destroy(new_finish + 1, m_finish + 1);
+				m_finish = new_finish;
+			}
+		}
+
+		// Since C++11
+		// iterator erase(const_iterator first, const_iterator last); 
+
+		void push_back(CharT ch)
+		{
+			if(m_finish + 1 == m_end_of_storage) {
+				reserve(size() + max(size(), static_cast<size_type>(1)));
+			}
+			m_construct_null(m_finish + 1);
+			Traits::assign(*m_finish, ch);
+			++m_finish;
+		}
+
+		void pop_back()
+		{
+			Traits::assign(*(m_finish - 1), m_null());
+			destroy(m_finish);
+			--m_finish;
+		}
+
+	private:
+		static CharT m_null()
+		{
+			return (CharT)0;
+		}
 
 	};
 
