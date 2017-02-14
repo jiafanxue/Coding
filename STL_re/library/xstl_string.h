@@ -1,9 +1,10 @@
 #ifndef LIBRARY_XSTL_STRING_H__
 #define LIBRARY_XSTL_STRING_H__
 
+#include <algorithm>			// for std::search, std::find_if
 #include <cstdlib>				// for std::size_t, std::ptrdiff_t
 #include <iterator>				// for std::reverse_iterator 
-#include <functional>
+#include <functional>			// for std::binary_function
 
 #ifndef _STL_THROW_ERROR
 #define _STL_THROW_ERROR
@@ -15,6 +16,19 @@
 
 namespace xstl
 {
+	template <typename T>
+	struct _Eq_traits : 
+		public std::binary_function<T, bool>
+	{
+		bool operator()(const T& lhs, const T& rhs) const
+		{
+			if(lhs == rhs) {
+				return true;
+			}
+			return false;
+		}
+	};
+
 	template <typename T, typename Alloc>
 	class _String_base
 	{
@@ -261,6 +275,41 @@ namespace xstl
 
 		// }
 
+		reference operator[](size_type pos)
+		{
+			return *(m_start + pos);
+		}
+
+		const_reference operator[](size_type pos) const
+		{
+			return *(m_start + pos);
+		}
+
+		basic_string& operator+=(const basic_string& str)
+		{
+			return append(str);
+		}
+
+		basic_string& operator+=(CharT ch)
+		{
+			push_back(ch);
+			return *this;
+		}
+
+		basic_string& operator+=(const CharT* s)
+		{
+			return append(s);
+		}
+
+		// Since C++11
+		basic_string& operator+=(std::initializer_list<CharT> ilist)
+		{
+			return append(ilist.begin(), ilist.end());	
+		}
+		// Since C++17
+		// basic_string& operator+=(std::basic_string_view<CharT, Traits> sv);
+
+	public:
 		basic_string& assign(size_type count, CharT ch);
 
 		basic_string& assign(const basic_string& str)
@@ -317,16 +366,6 @@ namespace xstl
 			if(pos >= size()) {
 				m_throw_out_of_range();
 			}
-			return *(m_start + pos);
-		}
-
-		reference operator[](size_type pos)
-		{
-			return *(m_start + pos);
-		}
-
-		const_reference operator[](size_type pos) const
-		{
 			return *(m_start + pos);
 		}
 
@@ -590,11 +629,284 @@ namespace xstl
 			--m_finish;
 		}
 
+		// append
+		basic_string& append(size_type count, CharT ch);
+
+		basic_string& append(const basic_string& str)
+		{
+			return append(str.begin(), str.end());
+		}
+
+		basic_string& append(const basic_string& str,
+			size_type pos,
+			size_type count)
+		{
+			if(pos > str.size()) {
+				m_throw_out_of_range();
+			}
+			return append(str.begin() + pos,
+				str.begin() + pos + std::min(count, size() - pos));
+		}
+
+		// Since C++14
+		// basic_string& append(const basic_string& str,
+		// 	size_type pos,
+		// 	size_type count = npos);
+
+		basic_string& append(const CharT* s, size_type count)
+		{
+			return append(s, s + count);
+		}
+
+		basic_string& append(const CharT* s)
+		{
+			return append(s, s + Traits::length(s));
+		}
+
+		basic_string& append(const CharT* first, const CharT* last);
+
 	private:
 		static CharT m_null()
 		{
 			return (CharT)0;
 		}
+
+
+	public:
+		// compare
+		int compare(const basic_string& str) const
+		{
+			return m_compare(m_start, m_finish, str.m_start, str.m_finish);
+		}
+
+		int compare(size_type pos1, size_type count1,
+			const basic_string& str) const
+		{
+			if(pos1 > size()) {
+				m_throw_out_of_range();
+			}
+			return m_compare(m_start + pos1,
+				m_finish + pos1 + std::min(count1, size() - pos1),
+				str.m_start, str.m_finish);
+		}
+
+		int compare(const CharT* s) const
+		{
+			return m_compare(m_start, m_finish, s, s + Traits::length(s));
+		}
+
+		int compare(size_type pos1, size_type count1,
+		 	const CharT* s) const
+		{
+			if(pos1 > size()) {
+				m_throw_out_of_range();
+			}
+			return m_compare(m_start + pos1,
+				m_finish + pos1 + std::min(count1, size() - pos1),
+				s, s + Traits::length(s));
+		}
+
+		int compare(size_type pos1, size_type count1,
+			const CharT* s, size_type count2) const
+		{
+			if(pos1 > size()) {
+				m_throw_out_of_range();
+			}
+			return m_compare(m_start + pos1,
+				m_start + pos1 + std::min(count1, size() - pos1),
+				s, s + count2);
+		}
+
+	public:
+		static int m_compare(const CharT* first1, const CharT* last1,
+			const CharT* first2, const CharT* last2)
+		{
+			const difference_type n1 = last1 - first1;
+			const difference_type n2 = last2 - first2;
+			const int cmp = Traits::compare(first1, first2, std::min(n1, n2));
+			return cmp != 0 ? cmp : (n1 < n2 ? -1 : (n1 > n2 ? 1 : 0));
+		}
+
+	public:
+		// replace
+		basic_string& replace(size_type pos, size_type count,
+			const basic_string& str)
+		{
+			if(pos > size()) {
+				m_throw_out_of_range();
+			}
+			const size_type len = std::min(count, size() - pos);
+			if(size() - len >= max_size() - str.size()) {
+				m_throw_length_error();
+			}
+			return replace(m_start + pos, m_start + pos + len,
+				str.begin(), str.end());
+		}
+
+		basic_string& replace(const_iterator first, const_iterator last,
+			const basic_string& str)
+		{
+			return replace(first, last, str.begin(), str.end());
+		}
+
+		// Until C++14
+		basic_string& replace(size_type pos1, size_type count1,
+			const basic_string& str,
+			size_type pos2, size_type count2)
+		{
+			if(pos1 > size() || pos2 > str.size()) {
+				m_throw_out_of_range();
+			}
+			const size_type len1 = std::min(count1, size() - pos1);
+			const size_type len2 = std::min(count2, str.size() - pos2);
+			if(size() - len1 >= max_size() - len2) {
+				m_throw_length_error();
+			}
+			return replace(m_start + pos1, m_start + pos1 + len1,
+				str.begin() + pos2, str.begin() + pos2 + len2);
+		}
+
+		basic_string& replace(iterator first1, iterator last1,
+			const iterator first2, const iterator last2);
+
+		basic_string& replace(size_type pos, size_type count,
+			const CharT* cstr, size_type count2)
+		{
+			if(pos > size()) {
+				m_throw_out_of_range();
+			}
+			const size_type len = std::min(count, size() - pos);
+			if(count2 > max_size() || size() - len >= max_size() - count2) {
+				m_throw_length_error();
+			}
+			return replace(m_start + pos, m_start + pos + len,
+				cstr, cstr + count2);
+		}
+
+		basic_string& replace(const_iterator first, const_iterator last,
+			const CharT* cstr, size_type count2)
+		{
+			return replace(first, last, cstr, cstr + count2);
+		}
+
+		basic_string& replace(size_type pos, size_type count,
+			const CharT* cstr)
+		{
+			if(pos > size()) {
+				m_throw_out_of_range();
+			}
+			const size_type len = std::min(count, size() - pos);
+			const size_type n2 = Traits::length(cstr);
+			if(n2 > max_size() || size() - len >= max_size() - n2) {
+				m_throw_length_error();
+			}
+			return replace(m_start + pos, m_start + pos + len, 
+				cstr, cstr + Traits::length(cstr));
+		}
+
+		// basic_string& replace(iterator first, iterator last, const CharT* cstr)
+		// {
+		// 	return replace(first2, last, cstr, cstr + Traits::length(cstr));
+		// }
+
+		basic_string& replace(const_iterator first, const_iterator last,
+			const CharT* cstr)
+		{
+			return replace(first, last, cstr, cstr + Traits::length(cstr));
+		}
+
+		basic_string& replace(size_type pos1, size_type count1,
+			size_type count2, CharT ch)
+		{
+			if(pos1 > size()) {
+				m_throw_out_of_range();
+			}
+			const size_type len = std::min(count1, size() - pos1);
+			if(count2 > max_size() || size() - len >= max_size() - count2) {
+				m_throw_length_error();
+			}
+			return replace(m_start + pos1, m_start + pos1 + len,
+				count2, ch);
+		}
+
+		basic_string& replace(const_iterator first, const_iterator last,
+			size_type count2, CharT ch);
+
+	private:
+		template <class _InputIterator>
+		void m_copy(_InputIterator _first, _InputIterator _last, iterator _result)
+		{
+			for(; _first != _last; ++_first, ++_last) {
+				Traits::assign(*_result, *_first);
+			}
+		}
+
+		void m_copy(const CharT* _first, const CharT* _last, CharT* _result)
+		{
+			Traits::copy(_result, _first, _last - _first);
+		}
+
+	public:
+		// substr
+		basic_string substr(size_type pos = 0, size_type count = npos) const
+		{
+			if(pos > size()) {
+				m_throw_out_of_range();
+			}
+			return basic_string(m_start + pos, 
+				m_start + pos + std::min(count, size() - pos));
+		}
+
+		// copy
+		size_type copy(CharT* dest, size_type count, size_type pos = 0) const
+		{
+			if(pos > size()) {
+				m_throw_out_of_range();
+			}
+			const size_type len = std::min(count, size() - pos);
+			Traits::copy(dest, m_start + pos, count);
+			return len;
+		}
+
+		// resize
+		void resize(size_type count)
+		{
+			return resize(count, m_null());
+		}
+
+		void resize(size_type count, CharT ch)
+		{
+			if(count <= size()) {
+				erase(begin() + count, end());
+			}
+			else {
+				append(count - size(), ch);
+			} 
+		}
+
+		// swap
+		void swap(basic_string& other)
+		{
+			std::swap(m_start, other.m_start);
+			std::swap(m_finish, other.m_finish);
+			std::swap(m_end_of_storage, other.m_end_of_storage);
+		}
+
+	public:
+		// Search
+		size_type find(const basic_string& str, size_type pos = 0) const
+		{
+			return find(str.begin(), pos, str.size());
+		}
+
+		size_type find(const CharT* s, size_type pos, size_type count) const;
+
+		size_type find(const CharT* s, size_type pos = 0) const
+		{
+			return find(s, pos, Traits::length(s));
+		}
+
+		size_type find(CharT ch, size_type pos = 0) const;
 
 	};
 
@@ -615,7 +927,8 @@ namespace xstl
 
 	template <typename CharT, typename Traits, typename Alloc>
 	basic_string<CharT, Traits, Alloc>& 
-	basic_string<CharT, Traits, Alloc>::assign(const CharT* first, const CharT* last)
+	basic_string<CharT, Traits, Alloc>::assign(const CharT* first, 
+		const CharT* last)
 	{
 		const difference_type n = last - first;
 		if(static_cast<size_type>(n) <= size()) {
@@ -627,6 +940,141 @@ namespace xstl
 			append(first + size(), last);
 		}
 	}
+
+	template <typename CharT, typename Traits, typename Alloc>
+	basic_string<CharT, Traits, Alloc>&
+	basic_string<CharT, Traits, Alloc>::append(size_type count, CharT ch)
+	{
+		if(count > max_size() || size() > max_size() - count) {
+			m_throw_length_error();
+		}
+
+		if(size() + count > capacity()) {
+			reserve(size() + max(size(), count));
+		}
+
+		if(count > 0) {
+			std::uninitialized_fill_n(m_finish + 1, count - 1, ch);
+			try {
+				m_construct_null(m_finish + count);
+			}
+			catch(...) {
+				destroy(m_finish + 1, m_finish + count);
+			}
+			Traits::assign(*m_finish, ch);
+			m_finish += count;
+		}
+		return *this;
+	}
+
+	template <typename CharT, typename Traits, typename Alloc>
+	basic_string<CharT, Traits, Alloc>&
+	basic_string<CharT, Traits, Alloc>::append(const CharT* first, 
+		const CharT* last)
+	{
+		if(first != last) {
+			const size_type old_size = size();
+			std::ptrdiff_t n = last - first;
+			if(n > max_size() || old_size > max_size() - n) {
+				m_throw_length_error();
+			}
+			if(old_size + n > capacity()) {
+				const size_type len = old_size + max(old_size, (size_t)n) + 1;
+				pointer new_start = m_allocate(len);
+				pointer new_finish = new_start;
+				try {
+					new_finish = std::uninitialized_copy(m_start, m_finish, new_start);
+					new_finish = std::uninitialized_copy(first, last, new_finish);
+					m_construct_null(new_finish);
+				}
+				catch(...) {
+					destroy(new_start, new_finish);
+					m_deallocate(new_start, len);
+				}
+				destroy(m_start, m_finish + 1);
+				m_deallocate_block();
+				m_start = new_start;
+				m_finish = new_finish;
+				m_end_of_storage = m_start + len;
+			}
+
+		}
+	}
+
+	template <typename CharT, typename Traits, typename Alloc>
+	basic_string<CharT, Traits, Alloc>&
+	basic_string<CharT, Traits, Alloc>::replace(
+		const_iterator first, 
+		const_iterator last,
+		size_type count2, CharT ch)
+	{
+		const size_type len = static_cast<size_type>(last - first);
+		if(len >= count2) {
+			Traits::assign(first, count2, ch);
+			erase(first + count2, last);
+		}
+		else {
+			Traits::assign(first, len, ch);
+			insert(last, count2 - len, ch);
+		}
+		return *this;
+	}
+
+	template <typename CharT, typename Traits, typename Alloc>
+	basic_string<CharT, Traits, Alloc>&
+	basic_string<CharT, Traits, Alloc>::replace(
+		iterator first1, iterator last1,
+		const iterator first2, const iterator last2)
+	{
+		const difference_type n = last1 - first2;
+		const difference_type len = last2 - first2;
+		if(len >= n) {
+			m_copy(first2, last2, first);
+			erase(first + n, last);
+		}
+		else {
+			const CharT* m = first2 + len;
+			m_copy(first2, m, first1);
+			insert(last1, m, last2);
+		}
+		return *this;
+	}
+
+	template <typename CharT, typename Traits, typename Alloc>
+	basic_string<CharT, Traits, Alloc>&
+	basic_string<CharT, Traits, Alloc>::find(const CharT* s, 
+		size_type pos, size_type count) const
+	{
+		if(pos + count > size()) {
+			return npos;
+		}
+		else {
+			const const_iterator result = 
+				std::search(
+					m_start + pos, m_finish,
+					s, s + count);
+			return result != m_finish ? result - begin() : npos;
+		}
+	}
+
+	template <typename CharT, typename Traits, typename Alloc>
+	basic_string<CharT, Traits, Alloc>&
+	basic_string<CharT, Traits, Alloc>::size_type find(CharT ch,
+	 	size_type pos) const
+	{
+		if(pos >= size()) {
+			return npos;
+		}
+		else {
+			const const_iterator result = 
+				find_if(
+					m_start + pos, m_start,
+					bind2nd(_Eq_traits<Traits>(), ch));
+			return result != m_finish ? result - begin() : npos;
+		}
+	}
+
+
 
 }
 
