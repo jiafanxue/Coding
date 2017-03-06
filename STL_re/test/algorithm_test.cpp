@@ -5,6 +5,13 @@
 #include <string>
 #include "../library/xstl_algorithm.h"
 
+struct Sum
+{
+	Sum() : sum{0} { }
+	void operator()(int n) { sum += n; }
+	int sum;
+};
+
 int main(int argc, char const *argv[])
 {
 	std::vector<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -33,7 +40,7 @@ int main(int argc, char const *argv[])
 
 	// unique
 	std::vector<int> vec{1, 1, 2, 3, 3, 3, 4};
-    /*auto last = */xstl::algo::unique(vec.begin(), vec.end());
+    xstl::algo::unique(vec.begin(), vec.end());
    	xstl::algo::copy(vec.cbegin(), vec.cend(), std::ostream_iterator<int>(std::cout, " "));
 	std::cout << std::endl;
 
@@ -43,5 +50,34 @@ int main(int argc, char const *argv[])
 		return std::isspace(l) && std::isspace(r) && l == r;
 	});
 	std::cout << std::string(s.begin(), send) << std::endl;
+
+	// unique_copy
+	std::string s1 = "The    string    with many   spaces!";
+	std::cout << "before: " << s1 << std::endl;
+	std::string s2;
+	std::string s3;
+	xstl::algo::unique_copy(s1.begin(), s1.end(), std::back_inserter(s2));
+	std::cout << "s2: " << s2 << std::endl;
+	xstl::algo::unique_copy(s1.begin(), s1.end(), std::back_inserter(s3),
+                     [](char c1, char c2){ return c1 == ' ' && c2 == ' '; });
+	std::cout << "after: " << s3 << std::endl;
+
+	// for_each
+	std::vector<int> nums{3, 4, 2, 8, 15, 267};
+	auto print = [](const int& i) { std::cout << " " << i; };
+
+	std::cout << "before:";
+	std::for_each(nums.begin(), nums.end(), print);
+	std::cout << std::endl;
+
+	std::for_each(nums.begin(), nums.end(), [](int& n) { n++; });
+
+	Sum sss = std::for_each(nums.begin(), nums.end(), Sum());
+
+	std::cout << "after: ";
+	std::for_each(nums.begin(), nums.end(), print);
+	std::cout << std::endl;
+	std::cout << "sum:" << sss.sum << std::endl;
+
 	return 0;
 }
