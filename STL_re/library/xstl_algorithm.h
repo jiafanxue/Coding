@@ -3,7 +3,7 @@
 
 // Non-modifying sequence operations
 #include "xstl_algo_find.h"				// find && find_if && find_if_not
-
+#include "xstl_algo_for_each.h"			// for_each
 
 // Modifying sequence operations
 #include "xstl_algo_copy.h"				// copy && copy_if && copy_n && copy_backward
