@@ -53,6 +53,61 @@ namespace xstl
 		}
 		*/ 
 
+		template <typename InputIt, typename OutputIt>
+		OutputIt unique_copy(InputIt first, InputIt last,
+			OutputIt d_first)
+		{
+			if(first == last) {
+				return d_first;
+			}
+
+			InputIt result = first;
+			*d_first = *first;
+			while(++first != last) {
+				if(!(*result == *first) && ++result != first) {
+					*result = std::move(*first);
+				}
+				*++d_first = *result;
+			}
+			return ++d_first;
+		}	
+
+		/* Since C++17
+		template <typename ExecutionPolicy, typename InputIt, typename OutputIt>
+		OutputIt unqiue_copy(ExecutionPolicy&& policy, InputIt first, InputIt last,
+			OutputIt d_first)
+		{
+
+		}
+		*/
+
+		template <typename InputIt, typename OutputIt, typename BinaryPredicate>
+		OutputIt unique_copy(InputIt first, InputIt last,
+			OutputIt d_first, BinaryPredicate p)
+		{
+			if(first == last) {
+				return d_first;
+			}
+
+			InputIt result = first;
+			*d_first = *first;
+			while(++first != last) {
+				if(!p(*result, *first) && ++result != first) {
+					*result = std::move(*first);
+				}
+				*++d_first = *result;
+			}
+			return ++d_first;
+		}
+
+		/* Since C++17
+		template <typename ExecutionPolicy, typename InputIt, typename OutputIt, typename BinaryPredicate>
+		OutputIt unqiue_copy(ExecutionPolicy&& policy, InputIt first, InputIt last,
+			OutputIt d_first, BinaryPredicate p)
+		{
+
+		}
+		*/
 	}
 }
 
