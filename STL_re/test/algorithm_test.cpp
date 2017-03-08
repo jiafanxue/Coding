@@ -12,6 +12,18 @@ struct Sum
 	int sum;
 };
 
+bool is_palindrome(const std::string& s)
+{
+	return xstl::algo::equal(s.begin(), s.begin() + s.size() / 2, s.rbegin());
+}
+
+void test(const std::string& s)
+{
+	std::cout << "\"" << s << "\"" 
+		<< (is_palindrome(s) ? "is" : "is not")
+		<< " a is_palindrome" << std::endl;
+}
+
 int main(int argc, char const *argv[])
 {
 	std::vector<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -78,6 +90,17 @@ int main(int argc, char const *argv[])
 	std::for_each(nums.begin(), nums.end(), print);
 	std::cout << std::endl;
 	std::cout << "sum:" << sss.sum << std::endl;
+
+	// equal
+	test("radar");
+	test("hello");
+	std::string str1 = "radar";
+	if(xstl::algo::equal(str1.begin(), str1.end(), str1.rbegin(), str1.rend())) {
+		std::cout << "Yes" << std::endl;
+	}
+	else {
+		std::cout << "No" << std::endl;
+	}
 
 	return 0;
 }
