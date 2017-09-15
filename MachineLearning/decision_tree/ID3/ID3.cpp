@@ -14,18 +14,17 @@
 #include <vector>
 
 // ID3决策算法 -- 西瓜决策树
-TreeRoot TreeGenerate(TreeRoot pTree,									// 决策树
-					  std::vector<Watermelon> datas,					// 训练集
+TreeRoot TreeGenerate(TreeRoot pTree,
+                      std::vector<Watermelon> datas,					// 训练集
                       std::vector<std::string> attributes,				// 属性集
-                      std::map<std::string, std::vector<std::string>> map_attr)	// 表示属性之间的映射关系
-					  															// 例如：颜色 对应 青绿，乌黑，浅白
+                      std::map<std::string, std::vector<std::string>> map_attr)
 {
-	if (belongs_same_label(datas, "yes")) {								 // 训练集都属于正例
+	if (belongs_same_label(datas, "yes")) {
 		// All samples are positive.
 		pTree->attribute = "yes";
 		return pTree;
 	}
-	else if (belongs_same_label(datas, "no")) {							// 训练集都属于反例
+	else if (belongs_same_label(datas, "no")) {
 		// All samples are negative.
 		pTree->attribute = "no";
 		return pTree;
@@ -44,15 +43,15 @@ TreeRoot TreeGenerate(TreeRoot pTree,									// 决策树
 				new_node->edgeValue = aptimal_attr;
 
 				std::vector<Watermelon> new_datas = remain_watermelon_datas(
-				        datas, aptimal_attr, optimal_attrs.first);
+				                                        datas, aptimal_attr, optimal_attrs.first);
 				if (new_datas.empty()) {
 					new_node->attribute = majority_of_category(datas);
 					// return pTree;
 				}
 				else {
 					std::vector<std::string> new_attributes;
-					for(auto train_attribute : attributes) {
-						if(train_attribute.compare(optimal_attrs.first)) {
+					for (auto train_attribute : attributes) {
+						if (train_attribute.compare(optimal_attrs.first)) {
 							new_attributes.push_back(train_attribute);
 						}
 					}
