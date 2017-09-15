@@ -1,0 +1,11 @@
+﻿*{font-family:Microsoft YaHei;}
+
+QPushButton
+{
+        border-image: url(:/LoginImages/images/LoginImages/arrowback.png) 0 60 0 0
+}
+
+QPushButton#FlipPushButton:hover
+{
+        border-image:url(:/LoginImages/images/LoginImages/arrowback.png) 0 30 0 30 ;
+}
