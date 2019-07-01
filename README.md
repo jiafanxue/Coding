@@ -6,3 +6,5 @@
 ## Face_Recognize
 一个人脸识别程序
 
+## QQ
+仿照QQ，使用Qt开发的界面
